@@ -5,6 +5,11 @@ FletBox is a wrapper around [flet](https://flet.dev/), handling the routing & sy
 
 ## Usage
 
+### Installation
+```
+pip install fletbox
+```
+
 ### General Example
 ```python
 import flet as ft
