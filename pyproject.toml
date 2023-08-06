@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling", "hatch-requirements-txt"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fletbox"
+version = "0.0.7"
+authors = [
+  { name="Xynon", email="" },
+]
+description = "A box for flet, abusing contextmanagers and decorators"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha"
+]
+dynamic = ["dependencies"]
+
+# [project.urls]
+# "Homepage" = ""
+# "Bug Tracker" = ""
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
