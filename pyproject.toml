@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "fletbox"
-version = "0.0.8"
+version = "0.0.9"
 authors = [
   { name="Xynon", email="" },
 ]
@@ -19,9 +19,9 @@ classifiers = [
 ]
 dynamic = ["dependencies"]
 
-# [project.urls]
-# "Homepage" = ""
-# "Bug Tracker" = ""
+[project.urls]
+"Homepage" = "https://github.com/Xynonners/fletbox"
+"Bug Tracker" = "https://github.com/Xynonners/fletbox/issues"
 
 [tool.hatch.metadata.hooks.requirements_txt]
 files = ["requirements.txt"]
