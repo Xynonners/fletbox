@@ -1,7 +1,7 @@
 # FletBox <img src=https://openclipart.org/download/183014 height=45 align=top>
 A box for flet, abusing contextmanagers and decorators.
 
-FletBox is a wrapper around [flet](https://flet.dev/), handling the routing & syntax for you.
+FletBox is a gradio/nicegui style wrapper around [flet](https://flet.dev/), handling the routing & syntax for you.
 
 ## Usage
 
