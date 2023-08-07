@@ -10,41 +10,70 @@ FletBox is a gradio/nicegui style wrapper around [flet](https://flet.dev/), hand
 pip install fletbox
 ```
 
-### General Example
+### Import
 ```python
 import flet as ft
 from fletbox import FletBox, Builder, Factory
+```
 
-#pass normal ft.app kwargs to FletBox, can also be set (eg. fb.port=8000)
-fb = FletBox()
+### Initialization
+*NOTE: you can pass normal ft.app kwargs to FletBox.*
+```python
+fb = FletBox(view=ft.AppView.WEB_BROWSER)
+```
+kwargs can also be set via edict.
+```python
+fb.kwargs.port = 8550
+```
 
-# use page.go(YOUR_ROUTE_HERE) for traveling between views
-@fb.view("/") #fletbox decorator for routing
-def test(page: ft.Page, builder: Builder) -> Builder:
-    #builder.layout is contextmanagers, remap via layout=builder.layout
-    with builder.layout.Container(expand=True, margin=-10, gradient=page.standard_gradient):
-        with builder.layout.Row() as row: #YOUR_X as YOUR_Y: since control is yielded in contextmanager
-            row.controls.append(ft.ElevatedButton("FletBox"))
-            builder.ElevatedButton("FletBox") #builder attrs for creating deepest control
-            textfield = builder.TextField(label="FletBox", text_size=20) #assign if modification/reads are required
+### Main Block, decorators and routing
+Here is one half of the core of fletbox, the view routing is handled in the background.
 
-    @builder.postexec #postexec decorator to run function after page/view load
+This decorator is used for routing, and all decorated views take two inputs, page and builder.
+```python
+@fb.view("/")
+def test(page: ft.Page, builder: Builder) -> Builder: # returning builder is optional (will replace generated builder if returned).
+```
+
+EXTRA: the standard page.go function can be used for traveling between routes.
+```python
+page.go("/")
+```
+
+### Main Block, contextmanagers (with statements)
+Here is the other half of the core of fletbox, the syntax is drastically altered from the standard flet library.
+
+```python
+@fb.view("/")
+def test(page: ft.Page, builder: Builder) -> None:
+    #builder.layout is contextmanagers. TIP: remap via layout=builder.layout
+    with builder.layout.Container(expand=True, margin=-10, gradient=page.standard_gradient): #can used stored attributes using "page" as a shared storage
+        with builder.layout.Row() as row: #can be assigned, or not
+            row.controls.append(ft.ElevatedButton("FletBox")) #see above
+            builder.ElevatedButton("FletBox") #IMPORTANT: root builder attrs are used for creating deepest control (not layout)
+            textfield = builder.TextField(label="FletBox", text_size=20) #can be assigned, or not - for modification/reads
+
+    @builder.postexec #OPTIONAL: postexec decorator - run function after view load
     def postfunc():
-        #YOUR_POST_FUNCTION_HERE
-
-    return builder  #returning builder is optional
+        pass #YOUR_POST_FUNCTION_HERE
 
 #can define whatever non-view-specific thing you want, passing target is optional
 def shared_methods(page: ft.Page):
     page.fonts = {
         "Raleway": "assets/Raleway[wght].ttf"
     }
-    page.theme = ft.Theme(color_scheme_seed="pink", visual_density="COMFORTABLE", font_family="Raleway", use_material3=False)
+    page.theme = ft.Theme(color_scheme_seed="pink", visual_density="COMFORTABLE", font_family="Raleway")
     page.standard_gradient = ft.LinearGradient(begin=ft.alignment.bottom_left, end=ft.alignment.top_right, colors=["#F7C35A", "#FBAFAB"])
+```
 
-#pass normal ft.app kwargs to fb.app, can also be set (eg. fb.port=8000)
+And finally we run the application.
+*NOTE: you can pass normal ft.app kwargs to fb.app.*
+```python
+#pass normal ft.app kwargs to fb.app
 fb.app(target=shared_methods)
 ```
+
+## Custom Usage
 ### Custom Elements
 ```python
 import flet as ft
