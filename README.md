@@ -18,20 +18,21 @@ from fletbox import FletBox, Builder, Factory
 #pass normal ft.app kwargs to FletBox, can also be set (eg. fb.port=8000)
 fb = FletBox()
 
-#fletbox decorator for routing, use page.go(YOUR_ROUTE_HERE) for traveling between views
-@fb.view("/")
+# use page.go(YOUR_ROUTE_HERE) for traveling between views
+@fb.view("/") #fletbox decorator for routing
 def test(page: ft.Page, builder: Builder) -> Builder:
     #builder.layout is contextmanagers, remap via layout=builder.layout
     with builder.layout.Container(expand=True, margin=-10, gradient=page.standard_gradient):
-        #can also do with YOUR_X as YOUR_Y: since control is yielded in contextmanager
-        with builder.layout.Row() as row:
+        with builder.layout.Row() as row: #YOUR_X as YOUR_Y: since control is yielded in contextmanager
             row.controls.append(ft.ElevatedButton("FletBox"))
-            #builder attrs for creating deepest control
-            builder.ElevatedButton("FletBox")
-            #assign if modification/reads are required
-            textfield = builder.TextField(label="FletBox", text_size=20)
-    #returning builder is optional
-    return builder
+            builder.ElevatedButton("FletBox") #builder attrs for creating deepest control
+            textfield = builder.TextField(label="FletBox", text_size=20) #assign if modification/reads are required
+
+    @builder.postexec #postexec decorator to run function after page/view load
+    def postfunc():
+        #YOUR_POST_FUNCTION_HERE
+
+    return builder  #returning builder is optional
 
 #can define whatever non-view-specific thing you want, passing target is optional
 def shared_methods(page: ft.Page):
