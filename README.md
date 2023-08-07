@@ -68,6 +68,7 @@ def shared_methods(page: ft.Page):
 ```
 
 And finally we run the application.
+
 *NOTE: you can pass normal ft.app kwargs to fb.app.*
 ```python
 #pass normal ft.app kwargs to fb.app
