@@ -27,12 +27,13 @@ fb.kwargs.port = 8550
 ```
 
 ### Main Block, decorators and routing
-Here is one half of the core of fletbox, the view routing is handled in the background.
+The view routing is handled in the background.
 
 This decorator is used for routing, and all decorated views take two inputs, page and builder.
 ```python
 @fb.view("/")
-def test(page: ft.Page, builder: Builder) -> Builder: # returning builder is optional (will replace generated builder if returned).
+def test(page: ft.Page, builder: Builder) -> Builder:
+# returning builder is optional (will replace generated builder if returned).
 ```
 
 EXTRA: the standard page.go function can be used for traveling between routes.
@@ -41,7 +42,7 @@ page.go("/")
 ```
 
 ### Main Block, contextmanagers (with statements)
-Here is the other half of the core of fletbox, the syntax is drastically altered from the standard flet library.
+The syntax is drastically altered from the standard flet library.
 
 ```python
 @fb.view("/")
@@ -73,7 +74,7 @@ And finally we run the application.
 fb.app(target=shared_methods)
 ```
 
-## Custom Usage
+## Other Usage
 ### Custom Elements
 ```python
 import flet as ft
