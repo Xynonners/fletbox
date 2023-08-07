@@ -52,8 +52,12 @@ class Builder():
         class _shell: pass
         self.layout = _shell()
 
+        #for building view tree
         self.root = ft.View()
         self.current = self.root
+
+        #function to run after page load
+        self.postfunc = None
 
         def layout(self, func: Callable):
             @functools.wraps(func)
@@ -108,8 +112,13 @@ class Builder():
                 setattr(self, alias, _shell())
             setattr(getattr(self, alias), element.__name__, items(self, element))
 
-    def modules(self):
-        return self, self.layout
+    def postexec(self, func: Callable):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+        self.postfunc = wrapper
+        return wrapper
+
 
 class Factory():
     def set_controls_from_module(self, m: ModuleType, alias:str="") -> None:
@@ -159,8 +168,10 @@ class FletBox():
             def route_change(e: ft.RouteChangeEvent):
                 start = time.time()
                 page.views.clear()
-                page.views.append(self.funcs[e.route](page))
+                builder = self.funcs[e.route](page)
+                page.views.append(builder.root)
                 page.go(e.route)
+                if builder.postfunc: builder.postfunc()
                 end = time.time()
                 if self.verbose: print(f"{page.client_ip} connected to route {e.route} in {round(end - start, 8)}")
             def view_pop(view):
@@ -189,8 +200,9 @@ class FletBox():
             @functools.wraps(func)
             def wrapper(page: ft.Page, *args, **kwargs):
                 builder = factory.Builder()
-                ret = func(*args, page=page, builder=builder, **kwargs); builder = ret if isinstance(ret, Builder) else builder
-                return ft.View(path, controls=builder.root.controls)
+                ret = func(page, builder, *args, **kwargs); builder = ret if isinstance(ret, Builder) else builder
+                builder.root.route = path
+                return builder
             return wrapper
         return decorator
 

@@ -21,7 +21,7 @@ fb = FletBox()
 #fletbox decorator for routing, use page.go(YOUR_ROUTE_HERE) for traveling between views
 @fb.view("/")
 def test(page: ft.Page, builder: Builder) -> Builder:
-    #builder.layout is contextmanagers, remap via layout=builder.layout or builder,layout=builder.modules()
+    #builder.layout is contextmanagers, remap via layout=builder.layout
     with builder.layout.Container(expand=True, margin=-10, gradient=page.standard_gradient):
         #can also do with YOUR_X as YOUR_Y: since control is yielded in contextmanager
         with builder.layout.Row() as row:
