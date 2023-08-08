@@ -96,7 +96,7 @@ fb = FletBox(factory=factory)
 def test(page: ft.Page, builder: Builder) -> None:
     with builder.layout.Container(expand=True, margin=-10):
         #shell class in builder for fm due to custom factory, builder.fm.layout also exists
-        builder.fm.Checkbox(ft.BoxShape.CIRCLE, value=False, disabled=False)
+        builder.fm.CheckBox(ft.BoxShape.CIRCLE, value=False, disabled=False)
 
 fb.app()
 ```
