@@ -100,3 +100,14 @@ def test(page: ft.Page, builder: Builder) -> None:
 
 fb.app()
 ```
+
+### Verbosity
+If you wish to disable printouts from fletbox, such as the follows:
+```
+SETUP completed in YOUR_TIME_HERE
+127.0.0.1 connected to route / in YOUR_TIME_HERE
+```
+set verbose as False (must be run before fb.app):
+```python
+fb.verbose = False
+```
