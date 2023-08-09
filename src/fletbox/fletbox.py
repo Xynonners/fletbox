@@ -129,7 +129,6 @@ class Factory():
         self.extra_layout_elements += [(alias, cls) for cls in tup[1]]
 
     def __init__(self, modules:dict={}) -> None:
-        self.name_index = {}
         self.extra_layout_elements = []
         self.extra_items_elements = []
         self.get_controls_from_module = Builder.get_controls_from_module
