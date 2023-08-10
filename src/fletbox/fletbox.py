@@ -16,13 +16,17 @@ from types import (
 import functools
 from contextlib import contextmanager
 
-from easydict import EasyDict as edict
-
 import flet as ft
 
 from rich import print
 
 import inspect
+
+# dirty implementation of easydict
+class AttrDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
 
 class Builder():
 
@@ -149,7 +153,7 @@ class FletBox():
         self.verbose = verbose
         #flet values
         self.target = target
-        self.kwargs = edict(kwargs)
+        self.kwargs = AttrDict(kwargs)
         self.kwargs.update({"view": view, "web_renderer": web_renderer, "port": port})
         #internal values
         self.funcs = {}
