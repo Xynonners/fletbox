@@ -1,3 +1,2 @@
-easydict
 flet
 rich
