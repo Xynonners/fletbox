@@ -22,6 +22,8 @@ from rich import print
 
 import inspect
 
+from simpleroute import BaseRouter
+
 # dirty implementation of easydict
 class AttrDict(dict):
     def __init__(self, *args, **kwargs):
@@ -165,18 +167,21 @@ class FletBox():
         self.kwargs = {**kwargs, **self.kwargs}
         #repopulate funcs via wrappers
         for wrapper in self.funcs.values(): wrapper()
+        self.router = BaseRouter([*self.funcs.keys()])
+        if self.verbose: print(""); print(self.router)
 
         def wrapped_target(page: ft.Page):
             #routing functions
             def route_change(e: ft.RouteChangeEvent):
                 start = time.time()
                 page.views.clear()
-                builder = self.funcs[e.route](page)
+                path, kwargs = self.router.match(e.route)
+                builder = self.funcs[path](e.route, page, **kwargs)
                 page.views.append(builder.root)
                 page.go(e.route)
                 if builder.postfunc: builder.postfunc()
                 end = time.time()
-                if self.verbose: print(f"{page.client_ip} connected to route {e.route} in {round(end - start, 8)}")
+                if self.verbose: print(f"{page.client_ip} connected to [bold blue]{e.route}[/bold blue] ╍ [bold red]{path}[/bold red] in {round(end - start, 8)}")
             def view_pop(view):
                 page.views.pop()
                 top_view = page.views[-1]
@@ -198,13 +203,13 @@ class FletBox():
 
     #wrap method to provide builder, return ft.View
     @staticmethod
-    def _view(path: str, factory: Factory):
+    def _view(factory: Factory):
         def decorator(func: Callable):
             @functools.wraps(func)
-            def wrapper(page: ft.Page, *args, **kwargs):
+            def wrapper(route: str, page: ft.Page, *args, **kwargs):
                 builder = factory.Builder()
                 ret = func(page, builder, *args, **kwargs); builder = ret if isinstance(ret, Builder) else builder
-                builder.root.route = path
+                builder.root.route = route
                 return builder
             return wrapper
         return decorator
@@ -214,7 +219,7 @@ class FletBox():
         def decorator(func: Callable):
             @functools.wraps(func)
             def wrapper(*args, **kwargs):
-                self.funcs.update({path: self._view(path, self.factory)(func)})
+                self.funcs.update({path: self._view(self.factory)(func)})
             self.funcs.update({path: wrapper})
             return wrapper
         return decorator
