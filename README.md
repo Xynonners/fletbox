@@ -111,3 +111,12 @@ set verbose as False (must be run before fb.app):
 ```python
 fb.verbose = False
 ```
+
+### Wildcard URLs
+If you want to make a dynamic view constructor:
+the following code will match (e.g. /something/1) and pass wildcard=VALUE_IN_URL as kwargs
+```python
+@fb.view("/something/:wildcard/")
+def wildcard_example(page: ft.Page, builder: Builder, wildcard:Any=...) -> None:
+```
+
