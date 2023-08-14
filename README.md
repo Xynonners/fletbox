@@ -117,7 +117,7 @@ If you want to make a dynamic view constructor:
 
 The following code will match (e.g. /something/1) and pass wildcard=VALUE_IN_URL as kwargs
 ```python
-@fb.view("/something/:wildcard/")
+@fb.view("/something/:wildcard")
 def wildcard_example(page: ft.Page, builder: Builder, wildcard:Any=...) -> None:
 ```
 
