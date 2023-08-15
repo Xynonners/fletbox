@@ -8,20 +8,16 @@ start_total = time.time()
 from typing import (
     Callable,
 )
-
 from types import (
     ModuleType,
 )
 
+import inspect
 import functools
 from contextlib import contextmanager
 
 import flet as ft
-
 from rich import print
-
-import inspect
-
 from simpleroute import BaseRouter
 
 # dirty implementation of easydict
@@ -29,6 +25,16 @@ class AttrDict(dict):
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
+    def __setattr__(self, name, value):
+        if not name in dir(dict):
+            super(AttrDict, self).__setattr__(name, value)
+        else:
+            raise AttributeError(f"object attribute {repr(name)} is read-only")
+    def __setitem__(self, name, value):
+        if not name in dir(dict):
+            super(AttrDict, self).__setitem__(name, value)
+        else:
+            raise AttributeError(f"object attribute {repr(name)} is read-only")
 
 class Builder():
 
