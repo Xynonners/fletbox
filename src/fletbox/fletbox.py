@@ -76,6 +76,7 @@ class Builder():
             @contextmanager
             def context_manager(*args, **kwargs):
                 old_current = self.current
+                #common occurances
                 if hasattr(self.current, "controls"):
                     self.current.controls.append(func(*args, **kwargs))
                     self.current = self.current.controls[-1]
@@ -85,6 +86,13 @@ class Builder():
                 elif hasattr(self.current, "content"):
                     self.current.content = func(*args, **kwargs)
                     self.current = self.current.content
+                #uncommon occurances
+                elif hasattr(self.current, "tabs"):
+                    self.current.tabs.append(func(*args, **kwargs))
+                    self.current = self.current.tabs[-1]
+                elif hasattr(self.current, "title"):
+                    self.current.title = func(*args, **kwargs)
+                    self.current = self.current.title
                 yield self.current
                 self.current = old_current
             return context_manager
@@ -92,6 +100,7 @@ class Builder():
         def items(self, func:Callable):
             @functools.wraps(func)
             def wrapper(*args, **kwargs):
+                #common occurances
                 if hasattr(self.current, "controls"):
                     self.current.controls.append(func(*args, **kwargs))
                     return self.current.controls[-1]
@@ -101,6 +110,13 @@ class Builder():
                 elif hasattr(self.current, "content"):
                     self.current.content = func(*args, **kwargs)
                     return self.current.content
+                #uncommon occurances
+                elif hasattr(self.current, "tabs"):
+                    self.current.tabs.append(func(*args, **kwargs))
+                    return self.current.tabs[-1]
+                elif hasattr(self.current, "title"):
+                    self.current.title = func(*args, **kwargs)
+                    return self.current.title
             return wrapper
 
         #create layout elements
