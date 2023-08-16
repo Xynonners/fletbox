@@ -155,10 +155,11 @@ class FletBox():
     def stub(page: ft.Page) -> None:
         pass
 
-    def __init__(self, factory:Factory=Factory(), verbose:bool=True, target:Callable=stub, view:ft.AppView=ft.AppView.WEB_BROWSER, web_renderer:ft.WebRenderer=ft.WebRenderer.HTML, port:int=8550, **kwargs) -> None:
+    def __init__(self, factory:Factory=Factory(), verbose:bool=True, catchall:str="/", target:Callable=stub, view:ft.AppView=ft.AppView.WEB_BROWSER, web_renderer:ft.WebRenderer=ft.WebRenderer.HTML, port:int=8550, **kwargs) -> None:
         #fletbox values
         self.factory = factory
         self.verbose = verbose
+        self.catchall = catchall
         #flet values
         self.target = target
         self.kwargs = AttrDict(kwargs)
@@ -173,7 +174,7 @@ class FletBox():
         self.kwargs = {**kwargs, **self.kwargs}
         #repopulate funcs via wrappers
         for wrapper in self.funcs.values(): wrapper()
-        self.router = BaseRouter([*self.funcs.keys()])
+        self.router = BaseRouter([*self.funcs.keys()], catchall=self.catchall)
         if self.verbose: print(""); print(self.router)
 
         def wrapped_target(page: ft.Page):
