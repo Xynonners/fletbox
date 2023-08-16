@@ -51,8 +51,8 @@ class Builder():
                     common_matches = len([*set(dir(cls)).intersection(["controls", "actions", "content"])])
                     uncommon_matches = len([*set(dir(cls)).intersection(["tabs", "title"])])
                     if common_matches > 1 or uncommon_matches > 1:
-                        print(f"[bold red]{name} matched \[{common_matches}c {uncommon_matches}u] possible subcontrol kwargs.[/bold red]")
-                    elif common_matches + uncommon_matches >= 1:
+                        print(f"[bold orange3]{name} matched \[{common_matches}c {uncommon_matches}u] possible subcontrol kwargs.[/bold orange3]")
+                    elif common_matches + uncommon_matches in (2, 1):
                         filtered_elements.append(cls)
         return all_elements, filtered_elements
 
