@@ -21,7 +21,7 @@ from fletbox import FletBox, Builder, Factory
 ```python
 fb = FletBox(view=ft.AppView.WEB_BROWSER)
 ```
-kwargs can also be set via attrdict.
+kwargs can also be set via AttrDict.
 ```python
 fb.kwargs.port = 8550
 ```
