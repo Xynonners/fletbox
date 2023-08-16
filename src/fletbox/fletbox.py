@@ -191,7 +191,7 @@ class FletBox():
         #target again
         self.target = target
         #merge app kwargs with init kwargs
-        self.kwargs = {**kwargs, **self.kwargs}
+        self.kwargs.update(kwargs)
         #repopulate funcs via wrappers
         for wrapper in self.funcs.values(): wrapper()
         self.router = BaseRouter([*self.funcs.keys()], catchall=self.catchall)
