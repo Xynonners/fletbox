@@ -48,11 +48,12 @@ class Builder():
             if inspect.isclass(cls):
                 if issubclass(cls, ft.Control):
                     all_elements.append(cls)
-                    matches = len([*set(dir(cls)).intersection(["controls", "actions", "content", "tabs", "title"])])
-                    if matches > 1:
-                        print(f"[bold red]{name} matched {matches} possible subcontrol kwargs.[/bold red]")
-                    elif matches == 1:
-                        filtered_elements.append(cls)
+                    filtered_elements.append(cls)
+                    # matches = len([*set(dir(cls)).intersection(["controls", "actions", "content", "tabs", "title"])])
+                    # if matches > 1:
+                    #     print(f"[bold red]{name} matched {matches} possible subcontrol kwargs.[/bold red]")
+                    # elif matches == 1:
+                    #     filtered_elements.append(cls)
         return all_elements, filtered_elements
 
     modules = [ft]
