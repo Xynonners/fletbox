@@ -139,6 +139,7 @@ def test(page: ft.Page, builder: Builder) -> None:
             row.controls.append(ft.ElevatedButton("FletBox"))
             builder.ElevatedButton("FletBox")
             textfield = builder.TextField(label="FletBox", text_size=20)
+    return builder #you may return builder as optional, if you want to swap it
 ```
 
 Access via internal value as following
@@ -151,4 +152,5 @@ def test(page: ft.Page) -> None:
             row.controls.append(ft.ElevatedButton("FletBox"))
             builder.ElevatedButton("FletBox")
             textfield = builder.TextField(label="FletBox", text_size=20)
+    return builder #you may return builder as optional, if you want to swap it
 ```
