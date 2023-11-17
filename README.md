@@ -36,8 +36,7 @@ The view routing is handled in the background.
 This decorator is used for routing, and all decorated views take two inputs, page and builder.
 ```python
 @fb.view("/")
-def test(page: ft.Page) -> Builder:
-# returning builder is optional (will replace generated builder if returned).
+def test(page: ft.Page):
 ```
 
 EXTRA: the standard page.go function can be used for traveling between routes.
