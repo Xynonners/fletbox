@@ -36,37 +36,30 @@ class AttrDict(dict):
         else:
             raise AttributeError(f"object attribute {repr(name)} is read-only")
 
+# filter elements with nonstandard controls inputs
+def get_controls_from_module(m: ModuleType) -> list:
+    elements = []
+    for name, cls in vars(m).items():
+        if inspect.isclass(cls):
+            if issubclass(cls, ft.Control):
+                elements.append(cls)
+                common_matches = len([*set(dir(cls)).intersection(["controls", "actions", "content"])])
+                uncommon_matches = len([*set(dir(cls)).intersection(["tabs", "title"])])
+                if common_matches > 1 or uncommon_matches > 1:
+                    print(f"[bold orange3]{name} matched \[{common_matches}c {uncommon_matches}u] possible subcontrol kwargs.[/bold orange3]")
+    return elements
+
 class Builder():
 
-    all_elements, filtered_elements = [], []
-
-    # filter elements with nonstandard controls inputs
-    @staticmethod
-    def get_controls_from_module(m: ModuleType) -> (list, list):
-        all_elements, filtered_elements = [], []
-        for name, cls in vars(m).items():
-            if inspect.isclass(cls):
-                if issubclass(cls, ft.Control):
-                    all_elements.append(cls)
-                    common_matches = len([*set(dir(cls)).intersection(["controls", "actions", "content"])])
-                    uncommon_matches = len([*set(dir(cls)).intersection(["tabs", "title"])])
-                    if common_matches > 1 or uncommon_matches > 1:
-                        print(f"[bold orange3]{name} matched \[{common_matches}c {uncommon_matches}u] possible subcontrol kwargs.[/bold orange3]")
-                    elif common_matches + uncommon_matches in (2, 1):
-                        filtered_elements.append(cls)
-        return all_elements, filtered_elements
-
     modules = [ft]
-    for m in modules:
-        tup = get_controls_from_module(m)
-        all_elements += tup[0]
-        filtered_elements += tup[1]
+    elements = [element for m in modules for element in get_controls_from_module(m)]
+
+    get_controls_from_module = staticmethod(get_controls_from_module)
 
     #layout/items/extra distinction no longer neccessary due to smart pattern matching of controls/actions/content kwargs
-    def __init__(self, extra_layout_elements:list=[], extra_items_elements:list=[]) -> None:
+    def __init__(self, extra_elements:list=[]) -> None:
         #not sure if we should be abusing edict here instead of using a shell class + setattr
         class _shell: pass
-        self.layout = _shell()
 
         #for building view tree
         self.root = ft.View()
@@ -75,74 +68,39 @@ class Builder():
         #function to run after page load
         self.postfunc = None
 
-        def layout(self, func: Callable):
-            @functools.wraps(func)
-            @contextmanager
-            def context_manager(*args, **kwargs):
-                old_current = self.current
-                #common occurances
-                if hasattr(self.current, "controls"):
-                    self.current.controls.append(func(*args, **kwargs))
-                    self.current = self.current.controls[-1]
-                elif hasattr(self.current, "actions"):
-                    self.current.actions.append(func(*args, **kwargs))
-                    self.current = self.current.actions[-1]
-                elif hasattr(self.current, "content"):
-                    self.current.content = func(*args, **kwargs)
-                    self.current = self.current.content
-                #uncommon occurances
-                elif hasattr(self.current, "tabs"):
-                    self.current.tabs.append(func(*args, **kwargs))
-                    self.current = self.current.tabs[-1]
-                elif hasattr(self.current, "title"):
-                    self.current.title = func(*args, **kwargs)
-                    self.current = self.current.title
-                yield self.current
-                self.current = old_current
-            return context_manager
-
-        def items(self, func:Callable):
-            @functools.wraps(func)
-            def wrapper(*args, **kwargs):
-                #common occurances
-                if hasattr(self.current, "controls"):
-                    self.current.controls.append(func(*args, **kwargs))
-                    return self.current.controls[-1]
-                elif hasattr(self.current, "actions"):
-                    self.current.actions.append(func(*args, **kwargs))
-                    return self.current.actions[-1]
-                elif hasattr(self.current, "content"):
-                    self.current.content = func(*args, **kwargs)
-                    return self.current.content
-                #uncommon occurances
-                elif hasattr(self.current, "tabs"):
-                    self.current.tabs.append(func(*args, **kwargs))
-                    return self.current.tabs[-1]
-                elif hasattr(self.current, "title"):
-                    self.current.title = func(*args, **kwargs)
-                    return self.current.title
+        outer_self = self
+        def wrap_control(cls: ft.Control):
+            class wrapper(cls):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+                    #common occurances
+                    if hasattr(outer_self.current, "controls"):
+                        outer_self.current.controls.append(self)
+                    elif hasattr(outer_self.current, "actions"):
+                        outer_self.current.actions.append(self)
+                    elif hasattr(outer_self.current, "content"):
+                        outer_self.current.content = self
+                    #uncommon occurances
+                    elif hasattr(outer_self.current, "tabs"):
+                        outer_self.current.tabs.append(self)
+                    elif hasattr(outer_self.current, "title"):
+                        outer_self.current.title = self
+                def __enter__(self):
+                    self.old_current = outer_self.current
+                    outer_self.current = self
+                def __exit__(self, *args):
+                    outer_self.current = self.old_current
             return wrapper
 
         #create layout elements
-        for element in self.filtered_elements:
-            setattr(self.layout, element.__name__, layout(self, element))
+        for element in self.elements:
+            setattr(self, element.__name__, wrap_control(element))
 
-        #create extra layout elements in alias shell class
-        for alias, element in extra_layout_elements:
+        #create extra elements in alias shell class
+        for alias, element in extra_elements:
             if not hasattr(self, alias):
                 setattr(self, alias, _shell())
-                setattr(getattr(self, alias), "layout", _shell())
-            setattr(getattr(self, alias).layout, element.__name__, layout(self, element))
-
-        #create items elements
-        for element in self.all_elements:
-            setattr(self, element.__name__, items(self, element))
-
-        #create extra items elements in alias shell class
-        for alias, element in extra_items_elements:
-            if not hasattr(self, alias):
-                setattr(self, alias, _shell())
-            setattr(getattr(self, alias), element.__name__, items(self, element))
+            setattr(getattr(self, alias), element.__name__, wrap_control(element))
 
     def postexec(self, func: Callable):
         @functools.wraps(func)
@@ -151,24 +109,23 @@ class Builder():
         self.postfunc = wrapper
         return wrapper
 
-
 class Factory():
+
+    get_controls_from_module = staticmethod(get_controls_from_module)
+
     def set_controls_from_module(self, m: ModuleType, alias:str="") -> None:
         if not alias:
             alias = m.__name__
-        tup = self.get_controls_from_module(m)
-        self.extra_items_elements += [(alias, cls) for cls in tup[0]]
-        self.extra_layout_elements += [(alias, cls) for cls in tup[1]]
+        elements = self.get_controls_from_module(m)
+        self.extra_elements += [(alias, cls) for cls in elements]
 
     def __init__(self, modules:dict={}) -> None:
-        self.extra_layout_elements = []
-        self.extra_items_elements = []
-        self.get_controls_from_module = Builder.get_controls_from_module
+        self.extra_elements = []
         for alias, m in modules.items():
             self.set_controls_from_module(m, alias=alias)
 
     def Builder(self) -> Builder:
-        return Builder(extra_layout_elements=self.extra_layout_elements, extra_items_elements=self.extra_items_elements)
+        return Builder(extra_elements=self.extra_elements)
 
 class FletBox():
     @staticmethod
@@ -229,13 +186,25 @@ class FletBox():
         ft.app(**self.kwargs)
 
     #wrap method to provide builder, return ft.View
-    @staticmethod
-    def _view(factory: Factory):
+    def _view(self, factory: Factory):
         def decorator(func: Callable):
             @functools.wraps(func)
-            def wrapper(route: str, page: ft.Page, *args, **kwargs):
+            def wrapper(route: str, page: ft.Page, **kwargs):
                 builder = factory.Builder()
-                ret = func(page, builder, *args, **kwargs); builder = ret if isinstance(ret, Builder) else builder
+                #allow our page class to access methods from builder
+                #https://stackoverflow.com/questions/38541015/how-to-monkey-patch-a-call-method
+                page.builder = builder
+                class BuilderPage(type(page)):
+                    def __getattr__(self, attr):
+                        return getattr(self.builder, attr)
+                page.__class__ = BuilderPage
+                #custom DI - dirty but may be useful for more explicit code
+                optional_args = {"builder": builder}
+                pass_args = {}
+                for k in inspect.getfullargspec(func).args:
+                    if k in optional_args.keys():
+                        pass_args.update({k: optional_args[k]})
+                ret = func(page, **pass_args, **kwargs); builder = ret if isinstance(ret, Builder) else builder
                 builder.root.route = route
                 return builder
             return wrapper
@@ -245,8 +214,9 @@ class FletBox():
     def view(self, path: str):
         def decorator(func: Callable):
             @functools.wraps(func)
-            def wrapper(*args, **kwargs):
+            def wrapper():
                 self.funcs.update({path: self._view(self.factory)(func)})
             self.funcs.update({path: wrapper})
             return wrapper
         return decorator
+
