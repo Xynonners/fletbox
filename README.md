@@ -5,6 +5,8 @@ FletBox is a gradio/nicegui style wrapper around [flet](https://flet.dev/), hand
 
 ## Usage
 
+**NOTE: for those who used fletbox<0.3, the syntax has changed and therefore your code will break. I promise though, the new syntax is definitely cleaner!**
+
 ### Installation
 ```
 pip install fletbox
@@ -32,7 +34,7 @@ The view routing is handled in the background.
 This decorator is used for routing, and all decorated views take two inputs, page and builder.
 ```python
 @fb.view("/")
-def test(page: ft.Page, builder: Builder) -> Builder:
+def test(page: ft.Page) -> Builder:
 # returning builder is optional (will replace generated builder if returned).
 ```
 
@@ -46,15 +48,14 @@ The syntax is drastically altered from the standard flet library.
 
 ```python
 @fb.view("/")
-def test(page: ft.Page, builder: Builder) -> None:
-    #builder.layout is contextmanagers. TIP: remap via layout=builder.layout
-    with builder.layout.Container(expand=True, margin=-10, gradient=page.standard_gradient): #can used stored attributes using "page" as a shared storage
-        with builder.layout.Row() as row: #can be assigned, or not
+def test(page: ft.Page) -> None:
+    with page.Container(expand=True, margin=-10, gradient=page.standard_gradient): #can used stored attributes using "page" as a shared storage
+        with page.Row() as row: #can be assigned, or not
             row.controls.append(ft.ElevatedButton("FletBox")) #see above
-            builder.ElevatedButton("FletBox") #IMPORTANT: root builder attrs are used for creating deepest control (not layout)
-            textfield = builder.TextField(label="FletBox", text_size=20) #can be assigned, or not - for modification/reads
+            page.ElevatedButton("FletBox")
+            textfield = page.TextField(label="FletBox", text_size=20) #can be assigned, or not - for modification/reads
 
-    @builder.postexec #OPTIONAL: postexec decorator - run function after view load
+    @page.postexec #OPTIONAL: postexec decorator - run function after view load
     def postfunc():
         pass #YOUR_POST_FUNCTION_HERE
 
@@ -93,10 +94,10 @@ fb = FletBox(factory=factory)
 
 #fletbox decorator for routing
 @fb.view("/")
-def test(page: ft.Page, builder: Builder) -> None:
-    with builder.layout.Container(expand=True, margin=-10):
-        #shell class in builder for fm due to custom factory, builder.fm.layout also exists
-        builder.fm.CheckBox(ft.BoxShape.CIRCLE, value=False, disabled=False)
+def test(page: ft.Page) -> None:
+    with page.Container(expand=True, margin=-10):
+        #shell class in builder for fm due to custom factory
+        page.fm.CheckBox(ft.BoxShape.CIRCLE, value=False, disabled=False)
 
 fb.app()
 ```
@@ -118,6 +119,35 @@ If you want to make a dynamic view constructor:
 The following code will match (e.g. /something/1) and pass wildcard=VALUE_IN_URL as kwargs
 ```python
 @fb.view("/something/:wildcard")
-def wildcard_example(page: ft.Page, builder: Builder, wildcard:Any=...) -> None:
+def wildcard_example(page: ft.Page, wildcard:Any=...) -> None:
 ```
 
+### Internal Builder
+Unlike in fletbox<=0.2.13, the layout subclass for controls no longer exists as the contextmanagers and items controls were merged.
+
+However, there is still an underlying builder subclass that was merged into page - for advanced uses it can be accessed in a few different ways.
+
+It is important to note that the builder is *stateless*, as in it is refreshed on every function / view invocation.
+
+Access via legacy args method as following
+```python
+@fb.view("/")
+def test(page: ft.Page, builder: Builder) -> None:
+    with builder.Container(expand=True, margin=-10, gradient=page.standard_gradient):
+        with builder.Row() as row:
+            row.controls.append(ft.ElevatedButton("FletBox"))
+            builder.ElevatedButton("FletBox")
+            textfield = builder.TextField(label="FletBox", text_size=20)
+```
+
+Access via internal value as following
+```python
+@fb.view("/")
+def test(page: ft.Page) -> None:
+    builder = page.builder
+    with builder.Container(expand=True, margin=-10, gradient=page.standard_gradient):
+        with builder.Row() as row:
+            row.controls.append(ft.ElevatedButton("FletBox"))
+            builder.ElevatedButton("FletBox")
+            textfield = builder.TextField(label="FletBox", text_size=20)
+```
