@@ -5,7 +5,9 @@ FletBox is a gradio/nicegui style wrapper around [flet](https://flet.dev/), hand
 
 ## Usage
 
-**NOTE: for those who used fletbox<0.3, the syntax has changed and therefore your code will break. I promise though, the new syntax is definitely cleaner!**
+**NOTE: for those who used fletbox<0.3, the syntax has changed and therefore your code will break.**
+
+**I promise though, the new syntax is definitely cleaner!**
 
 ### Installation
 ```
