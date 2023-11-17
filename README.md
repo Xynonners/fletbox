@@ -133,7 +133,7 @@ It is important to note that the builder is *stateless*, as in it is refreshed o
 Access via legacy args method as following
 ```python
 @fb.view("/")
-def test(page: ft.Page, builder: Builder) -> None:
+def test(page: ft.Page, builder: Builder) -> Builder:
     with builder.Container(expand=True, margin=-10, gradient=page.standard_gradient):
         with builder.Row() as row:
             row.controls.append(ft.ElevatedButton("FletBox"))
@@ -145,7 +145,7 @@ def test(page: ft.Page, builder: Builder) -> None:
 Access via internal value as following
 ```python
 @fb.view("/")
-def test(page: ft.Page) -> None:
+def test(page: ft.Page) -> Builder:
     builder = page.builder
     with builder.Container(expand=True, margin=-10, gradient=page.standard_gradient):
         with builder.Row() as row:
